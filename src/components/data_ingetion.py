@@ -35,3 +35,8 @@ class DataIngestion:
            )
         except Exception as e:
             raise CustomException(e,sys)
+
+if __name__=="__main__":
+    obje=DataIngestion()
+    obje.initiate_data_ingection()
+    logging.info("data injection finished")
