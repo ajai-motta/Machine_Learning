@@ -10,22 +10,24 @@ from sklearn.pipeline import Pipeline
 
 from src.exception import CustomException
 from src.logger import logging
-
+from src.utils import save_object
 
 @dataclass
 class DataTransformerConfig:
     preprocessor_obj_file_path=os.path.join('artifact','preprocessor.pkl')
 
 class DataTransformer:
-    def __int__(self):
+    def __init__(self):
         self.data_transformation_config=DataTransformerConfig()
 
     def get_data_transformer_object(self,train_path):
         try:
             df=pd.read_csv(train_path)
-            num_colums=df.select_dtypes(include=['Float64','Int64']).columns
+            target_column = "G3"
+            X = df.drop(columns=[target_column])
+            num_colums=X.select_dtypes(include=['Float64','Int64']).columns
             print(num_colums)
-            cat_columns=df.select_dtypes(exclude=['Float64','Int64']).columns
+            cat_columns=X.select_dtypes(exclude=['Float64','Int64']).columns
             numerical_pipeline=Pipeline(
                 steps=[("imputer",SimpleImputer(strategy='median')),
                        ("Scalar",StandardScaler())
@@ -34,7 +36,7 @@ class DataTransformer:
             )
             categorical_pipeline=Pipeline(
                 steps=[
-                    ("imputer",SimpleImputer(stratergy='most_frequent')),
+                    ("imputer",SimpleImputer(strategy='most_frequent')),
                     ("Encoder",OneHotEncoder())
                 ]   
             )
@@ -56,5 +58,18 @@ class DataTransformer:
             traing_target=df_train[traget_column]
             test_input_feature=df_test.drop(columns=[traget_column],axis=1)
             test_target=df_test[traget_column]
+            input_feture_train_pre=preprocessor.fit_transform(training_input_feature)
+            input_feture_test_pre=preprocessor.transform(test_input_feature)
+            train_arr=np.c_[input_feture_train_pre,np.array(traing_target)]
+            test_arr=np.c_[input_feture_test_pre,np.array(test_target)]
+            save_object(
+                file_path= self.data_transformation_config.preprocessor_obj_file_path,
+                obj=preprocessor
+            )
+            return (
+                train_arr,
+                test_arr,
+                self.data_transformation_config.preprocessor_obj_file_path
+            )
         except Exception as e:
             raise CustomException(e,sys)
