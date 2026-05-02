@@ -17,7 +17,7 @@ from sklearn.neighbors import KNeighborsRegressor
 
 @dataclass
 class ModelTrainerConfig:
-    trained_mode_file_path=os.path.join('artifact','mymodel.pkl')
+    trained_model_file_path=os.path.join('artifact','mymodel.pkl')
 
 
 class ModelTriner:
@@ -36,11 +36,17 @@ class ModelTriner:
                 "random_forest": RandomForestRegressor(),
                 "gradient_boosting": GradientBoostingRegressor(),
                 "knn": KNeighborsRegressor(),
-                "catboost": CatBoostRegressor(verbose=0,train_dir=None),
+                "catboost": CatBoostRegressor(verbose=0,allow_writing_files=False),
                
             }
             model_report: dict=evaluate_model(x_train=x_train,y_train=y_train,x_test=x_test,y_test=y_test,models=models)
             best_model = max(model_report, key=lambda x: model_report[x]["r2_score"])
+            model=models[best_model]
+            model.fit(x_train, y_train)
+            save_object(
+            file_path=self.model_triner_config.trained_model_file_path,
+            obj=model
+        )
             logging.info(f"{best_model} with r2_score of {model_report[best_model]['r2_score']}") # dont use "" it says end of line
         except Exception as e:
             raise CustomException(e,sys)

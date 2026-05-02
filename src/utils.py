@@ -23,6 +23,7 @@ def evaluate_model(x_train,y_train,x_test,y_test,models):
 
         for name, model in models.items():
             # Train model
+            print(model)
             model.fit(x_train, y_train)
 
             # Predictions
