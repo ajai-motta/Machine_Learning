@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 from src.components.data_transformation import DataTransformer,DataTransformerConfig
+from src.components.model_traing import ModelTriner
 @dataclass
 class DataIngestionConfig:
     train_data_path: str=os.path.join('artifact','train.csv')
@@ -41,6 +42,9 @@ if __name__=="__main__":
     obj2=DataTransformer()
     raw_data,test_data,train_data=obje.initiate_data_ingection()
     logging.info("data injection finished")
-    obj2.int_data_transform(train_data,test_data)
+    train_arr,test_arr,preprocesser_path=obj2.int_data_transform(train_data,test_data)
     logging.info("data transformation finished")
+    obj3=ModelTriner()
+    obj3.initate_model_train(train_arr,test_arr,preprocesser_path)
+    
     
